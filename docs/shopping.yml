@@ -1,0 +1,325 @@
+swagger: "2.0"
+info:
+  description: "This is a documentation of the Academy Bootcamp Shopping-API"
+  version: "1.0.0"
+  title: "Academy Bootcamp Shopping-API"
+  contact:
+    email: "academy@tarent.de"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost"
+basePath: "/"
+schemes:
+- "http"
+
+paths:
+  /products:
+    get:
+      tags:
+      - "products"
+      summary: "get all products"
+      description: "All products will be returned"
+      operationId: "getProducts"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Successful listing of all products"
+          type: array
+          items:
+            $ref: "#definitions/Product"
+        400:
+          description: "Either on incorrect content-type or malformed request"
+
+  /products/{sku}:
+    get:
+      tags:
+      - "products"
+      summary: "get a product by `sku`"
+      description: "A caller can receive a single product by its `sku`"
+      operationId: "getProduct"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Successful listing of specific product by its `sku`"
+          schema:
+            $ref: '#definitions/Product'
+        400:
+          description: "Either on incorrect content-type or malformed request"
+        404:
+          description: "Error if there is no product by the given `sku`"
+
+  /shoppingcart:   
+    get:
+      tags:
+        - "shopping cart"
+      summary: "get all available shopping carts"
+      description: "A caller can receive all shopping carts."
+      operationId: "getShoppingCarts"
+      produces:
+      - "application/json"    
+      responses:
+        200:
+          description: "Successful listing of specific shoping cart by its `uuid`"
+          type: array
+          items:
+            $ref: "#definitions/ShoppingCart"
+    
+    post:
+      tags:
+        - "shopping cart"
+      summary: "create new shopping cart"  
+      description: "A caller can create a new and empty shopping cart. The body is empty."
+      operationId: "postShoppingCart"
+      produces:
+      - "application/json"
+      responses:
+        201:
+          description: "Returns the location of the created shopping cart"
+          headers:
+            Location: 
+              schema:
+                type: "string"
+                example: "http://localhost/shoppingcart/550e8400-e29b-11d4-a716-446655440000"
+              description: "The new location of the created shopping cart"                
+        400:
+          description: "Either on incorrect content-type or malformed request"
+
+  /shoppingcart/{shoppingcart-uuid}:    
+    get:
+      tags:
+      - "shopping cart"
+      summary: "get a shopping cart by its `shoppingcart-uuid`"
+      description: "A caller can receive a single shopping cart by its `shoppingcart-uuid`"
+      operationId: "getShoppingCart"
+      produces:
+      - "application/json"          
+      responses:
+        200:
+          description: "Successful listing of specific shoping cart by its `shoppingcart-uuid`"
+          schema:
+            $ref: '#definitions/ShoppingCart'         
+        400:
+          description: "Either on incorrect content-type or malformed request"            
+        404:
+          description: "Error if there is no shopping cart by the given `shoppingcart-uuid`"  
+
+    delete:
+      tags:
+      - "shopping cart"
+      summary: "Removes the complete shopping cart."
+      description: "Removes the complete shopping cart and all its items."
+      operation: "deleteShoppingCart"
+      produces:
+      - "application/json"
+      responses:
+        204:
+          description: "Successful removed  the shoping cart"          
+        404:
+          description: "Error if there is no shopping cart by the given `shoppingcart-uuid`."                    
+
+  /shoppingcart/{shoppingcart-uuid}/items:
+    post:
+      tags:
+      - "shopping cart"
+      summary: "Adding a item to the shopping cart."
+      description: "Adding a item identified by a products `sku` to a shopping cart identifies by a `shoppingcart-uuid`."
+      operation: "postProductToShoppingCart"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Adds a new item to the shopping cart"
+        required: true
+        schema:
+          $ref: "#definitions/ShoppingCartItem"
+      responses:
+        201:
+          description: "Successful added a new item to the shoping cart and locate to the shopping cart"
+          headers:
+            Location: 
+              schema:
+                type: "string"
+                example: "http://localhost/shoppingcart/550e8400-e29b-11d4-a716-446655440000"
+              description: "The new location of the created shopping cart"
+        400:
+          description: "Either on incorrect content-type or malformed request"    
+          schema:
+            $ref: "#definitions/Failure"        
+        404:
+          description: "Error if there is no shopping cart by the given `shoppingcart-uuid`"     
+
+  /shoppingcart/{shoppingcart-uuid}/items/{sku}:
+    put:
+      tags:
+      - "shopping cart"
+      summary: "Overrides the quantity of a item"
+      description: "Overriding the quantity of the item, identified by the products `sku`, to a shopping cart identifies by its `shoppingcart-uuid`."
+      operation: "putQuantityOfAShoppingCardItem"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Overrides the quantity of the given cart item."
+        required: true
+        schema:
+          $ref: "#definitions/ShoppingCartItemQuantityUpdate"
+      responses:
+        200:
+          description: "Successful overrides the quantity."
+          headers:
+            Location: 
+              schema:
+                type: "string"
+                example: "http://localhost/shoppingcart/550e8400-e29b-11d4-a716-446655440000"      
+              description: "The location of the shopping cart"
+        400:
+          description: "Either on incorrect content-type or malformed request"    
+          schema:
+            $ref: "#definitions/Failure"        
+        404:
+          description: "Error if there is no shopping cart by the given `shoppingcart-uuid` or no product with this `sku`."    
+
+    delete:
+      tags:
+      - "shopping cart"
+      summary: "Removes the item from the shopping cart."
+      description: "Removing a item, identified by the products `sku`, from the shopping cart identifies by its `shoppingcart-uuid`."
+      operation: "deleteProductFromTheShoppingCart"
+      produces:
+      - "application/json"
+      responses:
+        204:
+          description: "Successful removed the item from the shoping cart"
+          headers:
+            Location: 
+              schema:
+                type: "string"
+                example: "http://localhost/shoppingcart/550e8400-e29b-11d4-a716-446655440000"
+              description: "The location of the shopping cart"                
+        404:
+          description: "Error if there is no shopping cart by the given `shoppingcart-uuid` or no item with this `sku`."                    
+
+
+definitions:
+  Product:
+    title: "A single product"
+    type: object
+    required:
+    - id
+    - sku
+    - name
+    - price
+    - eans
+    properties:
+      id:
+        type: "integer"
+        description: "a numeric id"
+        example: 10
+      sku:
+        type: "string"
+        description: "\"Stock Keeping Unit\" - A custom id in a free format"
+        example: "S-4711"
+      name:
+        type: "string"
+        example: "Muh Muh milk"
+      price:
+        type: "integer"
+        description: "Price in €-cent. A 2.99€ price is described as `299`"
+        maximum: 100000
+        example: 299
+      eans:
+        type: "array"
+        items:
+          type: "string"
+          description: "The international identification number. Either 8 or 13 digits."
+          pattern: "^\\d{8}$|^\\d{13}$"
+        example:
+          - 12345678
+          - 23498128
+
+  ShoppingCart:
+    title: "A shopping cart"
+    type: object
+    required:
+    - uuid
+    - amount
+    - items   
+    properties:
+      uuid:
+        type: "string"
+        format: "uuid"
+        description: "the `uuid` of this shopping cart"
+        example: "550e8400-e29b-11d4-a716-446655440000"
+      amount:
+        type: integer
+        description: "The sum of all products times their quantities in €-cent. A 14.95€ price is described as `1495`"
+        example: 1495
+      items:
+        type: array
+        items:
+          properties:
+            product:
+              $ref: "#definitions/Product"
+            quantity:
+              type: "integer"
+              description: "The quantity of the product."
+              example: 5
+              maximum: 40
+             
+  ShoppingCartItem:
+    title: "A shopping card item"
+    type: object
+    required:
+    - sku
+    - quantity   
+    properties:
+      sku:
+        type: "string"
+        description: "\"Stock Keeping Unit\" - A custom id in a free format"
+        example: "S-4711"
+      quantity:
+        type: "integer"
+        description: "The quantity of the product."
+        example: 5
+        maximum: 40    
+              
+  ShoppingCartItemQuantityUpdate:
+    title: "A shopping card item quantity update"
+    type: object
+    required:
+    - quantity   
+    properties:
+      quantity:
+        type: "integer"
+        description: "The quantity of the product."
+        example: 5
+        maximum: 40    
+        
+  Failure:
+    title: "A generic failure type"
+    type: object
+    required:
+      - uuid
+      - message
+      - datetime
+    properties:
+      uuid:
+        type: "string"
+        format: "uuid"
+        description: "the individual `uuid` of this failure. It should be find in the logs"
+        example: "550e8400-e29b-11d4-a716-446655440000"
+      message:
+        type: "string"
+        description: "The failure message"
+        maxLength: 512
+        example: "The given `sku` of the request can not be found in the system."
+      datetime:
+        type: "string"
+        description: "The timestamp the failure occured."
+        format: "date-time"
+        example: "2018-09-10T10:40:52Z"

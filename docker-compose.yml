@@ -1,0 +1,8 @@
+version: '2'
+services:
+  api_gateway_documentation:
+    image: academy_api_doc:latest
+    dns:
+    - 8.8.8.8
+    ports:
+    - 8080:8080
