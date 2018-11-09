@@ -1,4 +1,4 @@
-FROM swaggerapi/swagger-ui:latest
+FROM swaggerapi/swagger-ui:v3.19.4
 
 WORKDIR /app
 
